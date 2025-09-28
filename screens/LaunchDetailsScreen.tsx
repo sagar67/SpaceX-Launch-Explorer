@@ -43,12 +43,21 @@ export default function LaunchDetailsScreen({ route }: Props) {
   useEffect(() => {
     (async () => {
       setLoadingLocation(true);
-      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      let { status } = await Location.getForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        const requestResult =
+          await Location.requestForegroundPermissionsAsync();
+        status = requestResult.status;
+      }
+
       if (status !== "granted") {
         alert("Location permission denied.");
         setLoadingLocation(false);
         return;
       }
+
       try {
         const location = await Location.getCurrentPositionAsync({});
         setUserLocation({
@@ -62,6 +71,7 @@ export default function LaunchDetailsScreen({ route }: Props) {
       }
     })();
   }, []);
+
 
   // Calculate distance only after pad and user location are available
   useEffect(() => {
